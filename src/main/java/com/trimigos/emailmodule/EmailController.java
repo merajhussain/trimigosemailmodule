@@ -71,12 +71,12 @@ public class EmailController{
 
               Recipient toRecipient = new Recipient();
               EmailAddress toEmailAddress = new EmailAddress();
-              toEmailAddress.address="meraj@3migostech.com";
+              toEmailAddress.address="info@3migostech.com";
               toRecipient.emailAddress=toEmailAddress;
 
               Recipient ccRecipient = new Recipient();
               EmailAddress ccEmailAddress = new EmailAddress();
-              ccEmailAddress.address="meraj@3migostech.com";
+              ccEmailAddress.address="shaik@3migostech.com";
               ccRecipient.emailAddress=ccEmailAddress;
 
               message.toRecipients=List.of(toRecipient);
