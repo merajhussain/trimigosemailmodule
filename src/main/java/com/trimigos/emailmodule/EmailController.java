@@ -10,11 +10,15 @@ import java.nio.charset.StandardCharsets;
 import java.net.URLEncoder;
 import com.google.gson.Gson;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 public class EmailController{
 
-
+    Logger logger
+            = LoggerFactory.getLogger(EmailController.class);
     private static String getFormDataAsString(Map<String, String> formData) {
         StringBuilder formBodyBuilder = new StringBuilder();
         for (Map.Entry<String, String> singleEntry : formData.entrySet()) {
@@ -28,7 +32,7 @@ public class EmailController{
         return formBodyBuilder.toString();
     }
     @PostMapping("/sendEmail")
-    void sendEmail( ) {
+    void sendEmail(@RequestBody EmailRequest emailRequest ) {
          HttpClient client =   HttpClient.newHttpClient();
         StringBuilder formBodyBuilder = new StringBuilder();
         Map<String, String> formData = new HashMap<>();
@@ -47,20 +51,22 @@ public class EmailController{
         {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             String tokenResponse = response.body();
-            System.out.println(tokenResponse);
+
             Gson gson = new Gson();
             TokenResponse tokenData  = gson.fromJson(tokenResponse,
                     TokenResponse.class);
-            System.out.println("token="+tokenData.access_token);
+
           if(tokenData.access_token.length()>0)
           {
+              logger.info("Access token fetched successfully");
+
               JsonStructure jsonStructure = new JsonStructure();
               Message message = new Message();
-              message.subject="Email backend code completed";
+              message.subject="Query from "+emailRequest.name+" ("+emailRequest.companyName+")";
 
               Body body = new Body();
               body.contentType="Text";
-              body.content="Front end integreation in progress";
+              body.content="Message from "+emailRequest.emailAddress+":::::\n\n"+emailRequest.Message;
               message.body=body;
 
               Recipient toRecipient = new Recipient();
@@ -82,7 +88,7 @@ public class EmailController{
               // Convert the Java object to a JSON string
               ObjectMapper objectMapper = new ObjectMapper();
               String jsonString = objectMapper.writeValueAsString(jsonStructure);
-              System.out.println("email message:"+jsonString);
+
 
               HttpClient client1 =   HttpClient.newHttpClient();
               HttpRequest request1 = HttpRequest.newBuilder()
@@ -93,13 +99,15 @@ public class EmailController{
                       .build();
 
               HttpResponse<String> response1= client1.send(request1, HttpResponse.BodyHandlers.ofString());
-              System.out.println("Email send status:"+response1.statusCode());
+              logger.info("Email send status:{}",response1.statusCode());
+
 
           }
 
         }
         catch (Exception e) {
-            System.out.println("Exception occurend when sending email: "+e);
+            logger.error("Exception occurend when sending email: {}",e);
+
         }
 
     }
